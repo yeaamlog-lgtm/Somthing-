@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS users (id UUID PRIMARY KEY DEFAULT gen_random_uuid(),email TEXT UNIQUE NOT NULL,password_hash TEXT NOT NULL,display_name TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY,user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at TIMESTAMPTZ NOT NULL);
+CREATE TABLE IF NOT EXISTS rooms (id UUID PRIMARY KEY DEFAULT gen_random_uuid(),code TEXT UNIQUE NOT NULL,name TEXT NOT NULL,host_user_id UUID NOT NULL REFERENCES users(id),max_players INTEGER NOT NULL DEFAULT 8,status TEXT NOT NULL DEFAULT 'lobby',world JSONB NOT NULL DEFAULT '{}'::jsonb,version BIGINT NOT NULL DEFAULT 1,updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS room_players (room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,club_id TEXT,is_ai BOOLEAN NOT NULL DEFAULT false,joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),PRIMARY KEY(room_id,user_id));
+CREATE TABLE IF NOT EXISTS world_actions (id BIGSERIAL PRIMARY KEY,room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,user_id UUID REFERENCES users(id) ON DELETE SET NULL,action_type TEXT NOT NULL,payload JSONB NOT NULL DEFAULT '{}'::jsonb,version BIGINT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS room_players_room_idx ON room_players(room_id);
+CREATE INDEX IF NOT EXISTS world_actions_room_version_idx ON world_actions(room_id,version);

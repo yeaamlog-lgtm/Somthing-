@@ -1,7 +1,8 @@
 {
-  "name": "club-empire-football-manager",
+  "name": "club-empire-online-backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "start": "node server.mjs" }
+  "scripts": {"start":"node server.mjs"},
+  "dependencies": {"pg":"^8.16.3"}
 }
